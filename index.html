@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#176b57">
+<title>ภารกิจพิชิตระบบย่อยอาหาร</title>
+<style>
+:root{--green:#176b57;--mint:#e7f7ef;--red:#b83232;--ink:#172b26;--muted:#62736d;--line:#dce7e1}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#effaf5,#f5f7ff);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);min-height:100vh;padding:22px 14px}
+main{max-width:720px;margin:0 auto}.hero{text-align:center;padding:10px 8px 18px}.emoji{font-size:42px}.hero h1{font-size:clamp(1.6rem,5vw,2.25rem);margin:8px 0;color:var(--green)}.hero p{color:var(--muted);margin:0}
+.panel{background:white;border:1px solid var(--line);border-radius:22px;padding:clamp(18px,4vw,28px);box-shadow:0 12px 36px #1c55440d}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}.stat{background:#f4f8f6;border-radius:15px;padding:14px}.stat span{display:block;color:var(--muted);font-size:.9rem}.stat strong{font-size:1.8rem;color:var(--green)}
+.progress-head{display:flex;justify-content:space-between;gap:10px;font-size:.9rem;margin:10px 0}.track{height:9px;background:#e9efec;border-radius:99px;overflow:hidden}.bar{height:100%;width:0;background:var(--green);border-radius:99px;transition:width .25s}
+.kicker{color:var(--muted);font-size:.92rem;margin-top:22px}.question{font-size:1.28rem;line-height:1.65;margin:10px 0 22px}.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}.answer{font:inherit;font-weight:750;font-size:1.1rem;padding:16px;border:2px solid var(--line);border-radius:15px;background:white;cursor:pointer;transition:.15s}.answer:hover:not(:disabled){border-color:var(--green);transform:translateY(-1px)}.answer:disabled{cursor:default}.true{color:var(--green)}.false{color:var(--red)}.answer.selected-correct{background:#e7f7ef;border-color:#209768}.answer.selected-wrong{background:#fff0f0;border-color:#d75b5b}
+.feedback{margin-top:18px;padding:15px;border-radius:15px;background:#f4f8f6;line-height:1.6}.feedback h3{margin:0 0 5px;font-size:1.05rem}.feedback p{margin:0}.next,.restart{width:100%;border:0;border-radius:14px;background:var(--green);color:white;font:inherit;font-weight:750;padding:15px;margin-top:16px;cursor:pointer}.next:hover,.restart:hover{filter:brightness(.94)}.hidden{display:none}.result{text-align:center;padding:10px 0}.result .big{font-size:3rem;font-weight:850;color:var(--green);margin:5px}.result h2{margin-bottom:4px}.small{font-size:.9rem;color:var(--muted)}footer{text-align:center;font-size:.8rem;color:var(--muted);padding:18px 8px}
+@media(max-width:420px){.answers{grid-template-columns:1fr}.question{font-size:1.15rem}.stat strong{font-size:1.55rem}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero"><div class="emoji">🧠🔬</div><h1>ภารกิจพิชิตระบบย่อยอาหาร</h1><p>เกมวิทยาศาสตร์ • ตอบถูก–ผิด 10 ข้อ</p></header>
+  <section class="panel" id="game">
+    <div class="stats">
+      <div class="stat"><span>คะแนนสะสม</span><strong id="score">0 / 10</strong></div>
+      <div class="stat"><span>ความแม่นยำ</span><strong id="percent">—</strong></div>
+    </div>
+    <div class="progress-head"><span id="progressLabel">ข้อ 1 จาก 10</span><span id="progressPercent">ความก้าวหน้า 0%</span></div>
+    <div class="track"><div class="bar" id="bar"></div></div>
+    <div class="kicker" id="kicker">คำถามข้อที่ 1</div>
+    <div class="question" id="question"></div>
+    <div class="answers">
+      <button class="answer true" id="trueBtn">✓ ถูก</button>
+      <button class="answer false" id="falseBtn">✕ ผิด</button>
+    </div>
+    <div class="feedback hidden" id="feedback" aria-live="polite"></div>
+    <button class="next hidden" id="nextBtn">ข้อต่อไป →</button>
+  </section>
+  <section class="panel hidden" id="result">
+    <div class="result">
+      <div class="emoji" id="resultEmoji">🏆</div>
+      <h2 id="resultTitle">ยอดเยี่ยม!</h2>
+      <div class="big" id="finalPercent">100%</div>
+      <p id="finalScore">ตอบถูก 10 จาก 10 ข้อ</p>
+      <p id="encouragement"></p>
+      <button class="restart" id="restartBtn">↻ เล่นอีกครั้ง</button>
+    </div>
+  </section>
+  <footer>เรียนรู้ทีละข้อ แล้วเก่งขึ้นได้ทุกวัน 💚</footer>
+</main>
+<script>
+const questions = [
+ {q:"สิ่งมีชีวิตทุกชนิดมีโครงสร้างในการย่อยอาหารเหมือนกัน",a:false,e:"สิ่งมีชีวิตมีโครงสร้างในการย่อยอาหารแตกต่างกัน บางชนิดไม่มีทางเดินอาหารโดยเฉพาะ"},
+ {q:"คาร์โบไฮเดรต โปรตีน และลิพิด ต้องผ่านกระบวนการย่อยให้เหมาะสมก่อนที่ร่างกายจะดูดซึมและนำไปใช้ได้",a:true,e:"สารอาหารโมเลกุลใหญ่ส่วนใหญ่ต้องถูกย่อยให้มีขนาดเล็กลงก่อนดูดซึม ส่วนสารอาหารบางชนิด เช่น วิตามินและแร่ธาตุ ไม่ต้องย่อย"},
+ {q:"ทางเดินอาหารประกอบด้วยปาก หลอดอาหาร กระเพาะอาหาร ลำไส้เล็ก ลำไส้ใหญ่ และทวารหนัก ส่วนตับและตับอ่อนเป็นอวัยวะช่วยย่อยอาหาร",a:true,e:"อวัยวะเหล่านี้ทำงานร่วมกัน โดยตับและตับอ่อนช่วยในการย่อย แต่ไม่ได้เป็นส่วนของท่อทางเดินอาหารโดยตรง"},
+ {q:"ฟันช่วยบดเคี้ยวอาหาร เป็นการย่อยเชิงกล และลิ้นช่วยคลุกเคล้าอาหาร",a:true,e:"การบดเคี้ยวช่วยทำให้อาหารมีขนาดเล็กลง ส่วนลิ้นช่วยคลุกเคล้าอาหารและช่วยในการกลืน"},
+ {q:"ในกระเพาะอาหารมีการย่อยโปรตีนด้วยเอนไซม์เพปซินในสภาวะเป็นกรด",a:true,e:"กรดในกระเพาะช่วยสร้างสภาวะที่เหมาะสมให้เอนไซม์เพปซินทำงานย่อยโปรตีน"},
+ {q:"การย่อยอาหารในลำไส้เล็กอาศัยเอนไซม์จากตับอ่อนเท่านั้น",a:false,e:"ยังมีเอนไซม์จากผนังลำไส้เล็ก และน้ำดีจากตับช่วยให้ไขมันแตกเป็นหยดเล็ก ๆ"},
+ {q:"การดูดซึมสารอาหารส่วนใหญ่เกิดขึ้นที่ลำไส้เล็ก",a:true,e:"ลำไส้เล็กมีวิลลัสและไมโครวิลลัสช่วยเพิ่มพื้นที่ผิวสำหรับดูดซึมสารอาหาร"},
+ {q:"น้ำดีสร้างจากถุงน้ำดี แล้วส่งไปช่วยย่อยไขมันในลำไส้เล็ก",a:false,e:"น้ำดีสร้างจากตับ ส่วนถุงน้ำดีทำหน้าที่เก็บสะสมและทำให้น้ำดีเข้มข้นขึ้น น้ำดีช่วยให้ไขมันแตกเป็นหยดเล็ก ๆ ไม่ใช่เอนไซม์ย่อยไขมัน"},
+ {q:"เอนไซม์ไลเปสช่วยย่อยไตรกลีเซอไรด์ให้เป็นกรดไขมันและโมโนกลีเซอไรด์เป็นหลัก",a:true,e:"ไลเปสช่วยย่อยไขมัน โดยผลิตภัณฑ์หลักจากการย่อยไตรกลีเซอไรด์คือกรดไขมันและโมโนกลีเซอไรด์"},
+ {q:"เอนไซม์เป็นตัวเร่งปฏิกิริยาทางชีวภาพที่ช่วยให้การย่อยอาหารเกิดเร็วขึ้น",a:true,e:"เอนไซม์ช่วยเร่งปฏิกิริยาโดยไม่ถูกใช้หมดไปในปฏิกิริยานั้น"}
+];
+let index=0, score=0, answered=0, selected=null;
+const $=id=>document.getElementById(id);
+function render(){
+ const q=questions[index]; selected=null;
+ $("question").textContent=q.q; $("kicker").textContent=`คำถามข้อที่ ${index+1}`;
+ $("progressLabel").textContent=`ข้อ ${index+1} จาก ${questions.length}`;
+ $("progressPercent").textContent=`ความก้าวหน้า ${Math.round(index/questions.length*100)}%`;
+ $("bar").style.width=`${index/questions.length*100}%`;
+ $("trueBtn").disabled=false; $("falseBtn").disabled=false;
+ $("trueBtn").className="answer true"; $("falseBtn").className="answer false";
+ $("feedback").classList.add("hidden"); $("nextBtn").classList.add("hidden");
+ $("nextBtn").textContent=index===questions.length-1?"ดูผลคะแนน →":"ข้อต่อไป →";
+ updateStats();
+}
+function updateStats(){
+ $("score").textContent=`${score} / ${questions.length}`;
+ $("percent").textContent=answered?`${Math.round(score/answered*100)}%`:"—";
+}
+function answer(value){
+ if(selected!==null)return;
+ selected=value; answered++;
+ const q=questions[index], correct=value===q.a;
+ if(correct)score++;
+ $("trueBtn").disabled=true; $("falseBtn").disabled=true;
+ const chosen=value? $("trueBtn"):$("falseBtn");
+ chosen.classList.add(correct?"selected-correct":"selected-wrong");
+ if(!correct)(q.a? $("trueBtn"):$("falseBtn")).classList.add("selected-correct");
+ updateStats();
+ $("progressLabel").textContent=`ตอบแล้ว ${answered} จาก ${questions.length} ข้อ`;
+ $("progressPercent").textContent=`ความก้าวหน้า ${Math.round(answered/questions.length*100)}%`;
+ $("bar").style.width=`${answered/questions.length*100}%`;
+ const encouragement=correct?["เก่งมาก! ตอบถูก 🎉","ยอดเยี่ยม! ทำต่อไป 💚","เยี่ยมเลย! คุณทำได้ ✨","ถูกต้องแล้ว ลุยต่อ! 🚀"][Math.floor(Math.random()*4)]:"ไม่เป็นไรนะ เรียนรู้จากเฉลยแล้วไปต่อ 💪";
+ $("feedback").innerHTML=`<h3>${correct?encouragement:"คำตอบที่ถูกคือ: "+(q.a?"ถูก ✓":"ผิด ✕")}</h3><p>${q.e}</p><p class="small" style="margin-top:8px">ความแม่นยำตอนนี้: ${Math.round(score/answered*100)}% (${score}/${answered} ข้อที่ตอบแล้ว)</p>`;
+ $("feedback").classList.remove("hidden"); $("nextBtn").classList.remove("hidden");
+}
+function finish(){
+ $("game").classList.add("hidden"); $("result").classList.remove("hidden");
+ const pct=Math.round(score/questions.length*100);
+ $("finalPercent").textContent=pct+"%"; $("finalScore").textContent=`ตอบถูก ${score} จาก ${questions.length} ข้อ`;
+ $("resultEmoji").textContent=pct===100?"🏆":pct>=80?"🌟":pct>=50?"💪":"📚";
+ $("resultTitle").textContent=pct===100?"สมบูรณ์แบบ!":pct>=80?"ยอดเยี่ยม!":pct>=50?"ทำได้ดีมาก!":"ทบทวนอีกนิด แล้วลองใหม่!";
+ $("encouragement").textContent=pct===100?"ตอบถูกทุกข้อ เก่งมาก!":pct>=80?"คุณเข้าใจเรื่องระบบย่อยอาหารได้ดีมาก":pct>=50?"ทบทวนเฉลย แล้วลองเล่นอีกครั้งเพื่อเพิ่มคะแนนนะ":"ทุกข้อคือโอกาสในการเรียนรู้ ลองใหม่ได้เสมอ!";
+}
+$("trueBtn").addEventListener("click",()=>answer(true));
+$("falseBtn").addEventListener("click",()=>answer(false));
+$("nextBtn").addEventListener("click",()=>{if(index===questions.length-1)finish();else{index++;render()}});
+$("restartBtn").addEventListener("click",()=>{index=0;score=0;answered=0;$("result").classList.add("hidden");$("game").classList.remove("hidden");render()});
+render();
+</script>
+</body>
+</html>
